@@ -2,18 +2,34 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 )
 
 func main() {
-
 	lines := flag.Bool("l", false, "Count lines")
-	bytes := flag.Bool("b", false, "Count bytes")
+	bytesCount := flag.Bool("b", false, "Count bytes")
 	flag.Parse()
-	fmt.Println(count(os.Stdin, *lines, *bytes))
+	if flag.NArg() <= 1 {
+		fmt.Println(count(os.Stdin, *lines, *bytesCount))
+	} else {
+		fileNames := flag.Args()
+		for _, v := range fileNames {
+			input, err := ioutil.ReadFile(v)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				os.Exit(1)
+			}
+			reader := bytes.NewReader(input)
+			fmt.Printf("File path: %s\n", v)
+			fmt.Println(count(reader, *lines, *bytesCount))
+		}
+	}
+
 }
 
 func count(r io.Reader, countLines bool, countBytes bool) int {
